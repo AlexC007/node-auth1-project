@@ -3,14 +3,35 @@ const helmet = require('helmet');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const Users = require('./usersAuth/usersAuth-model');
+const session = require('express-session')
 const server = express();
 
+server.use(
+    session ({
+        name: 'The Realm',
+        secret:'The Seven Dwarves',
+        cookie:{
+            maxAge: 1000*60,
+            secure: true,
+
+        },
+        httpOnly:true,
+        resave: false,
+        saveUninitialized: false
+
+    })
+)
 server.use(helmet());
 server.use(express.json());
 server.use(cors());
+//server.use(session(session))
+
+
  
 server.get('/', (req, res) => {
   res.send("Let's see if we're working");
+  req.session.name = 'Sully'
+  res.send(`Second time around, ${req.session.name}!`)
 });
 
 server.post('/api/login', Authenticate, (req, res) => {
@@ -19,7 +40,7 @@ server.post('/api/login', Authenticate, (req, res) => {
   });
 
   
-server.post('/api/register', Authenticate, (req, res) => {
+server.post('/api/register', /*Authenticate,*/ (req, res) => {
   let user = req.body;
   const hash = bcrypt.hashSync(user.password, 12);
   user.password = hash;
